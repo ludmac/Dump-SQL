@@ -38,7 +38,7 @@ if(!is_dir($chemin.$dateenr))
 mkdir($chemin.$dateenr.'/'.$heureenr, 0755);
 
 // Suppression du dossier daté de plus que la période configurée (s'il existe)
-if(!is_dir($chemin.$supjours))
+if(is_dir($chemin.$supjours))
 {
 	suppr_rep($chemin.$supjours);
 }
