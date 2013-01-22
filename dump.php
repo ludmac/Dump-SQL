@@ -25,7 +25,7 @@ $result = mysql_query('SHOW DATABASES');
 
 // Définition de la date et de l'heure actuelle
 $dateenr = date('Ymd');
-$heureenr = date('H:i');
+$heureenr = date('Hi');
 // Déduction de la date à supprimer
 $supjours = date('Ymd', strtotime("-".$jours." day"));
 
