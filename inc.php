@@ -1,40 +1,53 @@
 <?php
 
-// Fonction qui retourne le chemin relatif au dossier dans lequel se trouve le script
-function dossier_courant()
+function log_command($command = '', $file)
 {
-	// Chemin complet vers le script
-	$dossier = $_SERVER['DOCUMENT_ROOT'];
-	// Nom du script
-	$script = $_SERVER['PHP_SELF'];
-	// Chemin - Nom = Dossier courant
-	return $dossier.mb_substr($script,0,-mb_strlen(strrchr($script,"/")));
+	if (!empty($file))
+	{
+		$log_infos = pathinfo($file);
+		createDir($log_infos['dirname']);
+		$date = new DateTime();
+		file_put_contents($file, $date->format('Y-m-d H:i:s') . ' : ' . $command . PHP_EOL, FILE_APPEND);
+	}
 }
 
-// Fonction permettant de supprimer un répertoire après l'avoir vidé des éléments (et dossiers) qu'il contenait etc (en boucle)
-function suppr_rep($rep)
+function suppr_rep($rep, $fichierLog = '')
 {
 	if (is_dir($rep))
 	{
 		$rep_courant = opendir($rep);
-		// Tant qu'il y a des éléments dans le dossier courant
 		while($titre = readdir($rep_courant))
-			{
-			// L'élément en cours est un dossier ou un fichier ? (hors '.' et '..')
+		{
 			if(is_dir("$rep/$titre") and ($titre != "." and $titre != ".."))
 			{
-				// C'est un dossier -> on réaplique la fonction sur celui-ci
-				suppr_rep("${rep}/${titre}");
+				suppr_rep("${rep}/${titre}", $fichierLog);
 			}
 			elseif($titre != "." and $titre != "..")
 			{
-				// C'est un fichier -> on le supprime
 				unlink("${rep}/${titre}");
 			}
 		}
 		closedir($rep_courant);
-		// On supprime le dossier maintenant vide
-		rmdir($rep);
+		log_command('### => Suppression du dossier (script PHP) ' . $rep . ' : ' . ((rmdir($rep)) ? 'OK' : 'Echec !'), $fichierLog);
+	}
+}
+
+function createDir($path, $chmod = 0755, $fichierLog = '')
+{
+	if (!is_dir($path))
+	{
+		$dirs = explode('/', str_replace(dirname(__FILE__) . '/', '', $path));
+		foreach ($dirs as $key => $dir)
+		{
+			$dir = '';
+			for ($i = 0; $i <= $key; $i++) {
+				$dir .= $dirs[$i] . '/';
+			}
+			if (!is_dir($dir))
+			{
+				log_command('### Création du dossier ' . $dir . ' : ' . ((mkdir($dir, $chmod)) ? 'OK' : 'Echec !'), $fichierLog);
+			}
+		}
 	}
 }
 
